@@ -61,7 +61,7 @@ class CartController extends Controller
             $quantity = Stock::where('product_id', $product->id)->sum('quantity');
 
             if ($product->pivot->quantity > $quantity) {
-                return view('user.cart.index');
+                return redirect()->route('user.cart.index');
             } else {
                 $lineItem = [
                     'name' => $product->name,
@@ -83,14 +83,12 @@ class CartController extends Controller
             ]);
         }
 
-        dd('test');
-
         \Stripe\Stripe::setApiKey(env('STRIPE_SECRET_KEY'));
 
         $session = \Stripe\Checkout\Session::create([
             'payment_method_types' => ['card'],
             'mode' => 'payment',
-            'lien_items' => [$lineItems],
+            'line_items' => [$lineItems],
             'success_url' => route('user.items.index'),
             'cancel_url' => route('user.cart.index'),
         ]);
