@@ -64,21 +64,23 @@ class Product extends Model
         return $this->hasMany(Stock::class);
     }
 
-    public function users() {
+    public function users()
+    {
         return $this->belongsToMany(
             User::class,
             'carts'
         )->withPivot(['id', 'quantity']);
     }
 
-    public function scopeAvailableItems($query) {
+    public function scopeAvailableItems($query)
+    {
         $stocks = DB::table('t_stocks')
-        ->select(
-            'product_id',
-            DB::raw('sum(quantity) as quantity')
-        )
-        ->groupBy('product_id')
-        ->having('quantity', '>', 1);
+            ->select(
+                'product_id',
+                DB::raw('sum(quantity) as quantity')
+            )
+            ->groupBy('product_id')
+            ->having('quantity', '>', 1);
 
         return $query
             ->joinSub($stocks, 'stock', function ($join) {
@@ -103,5 +105,24 @@ class Product extends Model
                 'secondary_categories.name as category',
                 'image1.filename as filename'
             );
+    }
+
+    public function scopeSortOrder($query, $sortOrder)
+    {
+        if ($sortOrder === null || $sortOrder === \Constant::SORT_ORDER['recommend']) {
+            return $query->orderBy('sort_order', 'asc');
+        }
+        if ($sortOrder === \Constant::SORT_ORDER['higherPrice']) {
+            return $query->orderBy('price', 'desc');
+        }
+        if ($sortOrder === \Constant::SORT_ORDER['lowerPrice']) {
+            return $query->orderBy('price', 'asc');
+        }
+        if ($sortOrder === \Constant::SORT_ORDER['later']) {
+            return $query->orderBy('products.created_at', 'desc');
+        }
+        if ($sortOrder === \Constant::SORT_ORDER['older']) {
+            return $query->orderBy('products.created_at', 'asc');
+        }
     }
 }

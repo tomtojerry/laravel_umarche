@@ -19,7 +19,7 @@ class ItemController extends Controller
             $id = $request->route()->parameter('item');
             if (!is_null($id)) {
                 $itemId = Product::AvailableItems()->where('products.id', $id)->exists();
-                if (!$itemId) { 
+                if (!$itemId) {
                     abort(404); // 404画面表示
                 }
             }
@@ -27,9 +27,11 @@ class ItemController extends Controller
         });
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $products = Product::AvailableItems()->get();
+        $products = Product::AvailableItems()
+            ->sortOrder($request->sort)
+            ->get();
 
         return view('user.index', compact('products'));
     }
